@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>My Chatbot Project</title>
+<style>
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: linear-gradient(45deg, #ff6b6b, #4ecdc4, #45b7d1, #96ceb4);
+    background-size: 400% 400%;
+    animation: gradientShift 8s ease infinite;
+    margin: 0;
+    padding: 0;
+    height: 100vh;
+    overflow: hidden;
+}
+
+@keyframes gradientShift {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
+
+.container {
+    width: 100%;
+    height: 100vh;
+    margin: 0;
+    background: white;
+    border-radius: 0;
+    box-shadow: none;
+    overflow: hidden;
+    border: none;
+    display: flex;
+    flex-direction: column;
+}
+
+.header {
+    background: #333;
+    color: white;
+    padding: 20px;
+    text-align: center;
+    position: relative;
+}
+
+.header h1 {
+    margin: 0;
+    font-size: 24px;
+    color: #fff;
+}
+
+.subtitle {
+    font-size: 14px;
+    margin-top: 5px;
+    opacity: 0.8;
+}
+
+.chat-area {
+    flex: 1;
+    overflow-y: auto;
+    padding: 20px 40px;
+    background: #f9f9f9;
+}
+
+.message {
+    margin-bottom: 15px;
+    clear: both;
+}
+
+.user-msg {
+    text-align: right;
+}
+
+.user-msg .bubble {
+    background: #007bff;
+    color: white;
+    display: inline-block;
+    padding: 12px 18px;
+    border-radius: 18px 18px 5px 18px;
+    max-width: 60%;
+    word-wrap: break-word;
+    margin-left: 40%;
+    font-size: 16px;
+}
+
+.bot-msg .bubble {
+    background: #e9ecef;
+    color: #333;
+    display: inline-block;
+    padding: 12px 18px;
+    border-radius: 18px 18px 18px 5px;
+    max-width: 60%;
+    word-wrap: break-word;
+    border-left: 4px solid #28a745;
+    font-size: 16px;
+}
+
+.input-section {
+    padding: 20px 40px;
+    background: white;
+    display: flex;
+    gap: 15px;
+    border-top: 1px solid #ddd;
+    flex-shrink: 0;
+}
+
+#messageInput {
+    flex: 1;
+    padding: 12px;
+    border: 2px solid #ddd;
+    border-radius: 25px;
+    font-size: 16px;
+    outline: none;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+#messageInput:focus {
+    border-color: #007bff;
+}
+
+#sendButton {
+    background: #007bff;
+    color: white;
+    border: none;
+    padding: 12px 20px;
+    border-radius: 25px;
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: bold;
+    transition: background 0.3s;
+}
+
+#sendButton:hover {
+    background: #0056b3;
+}
+
+.welcome-screen {
+    text-align: center;
+    padding: 40px 20px;
+    color: #666;
+}
+
+.welcome-screen h2 {
+    color: #333;
+    margin-bottom: 15px;
+}
+
+.starter-buttons {
+    margin-top: 20px;
+}
+
+.starter-btn {
+    background: #28a745;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    margin: 5px;
+    border-radius: 20px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: all 0.2s;
+}
+
+.starter-btn:hover {
+    background: #218838;
+    transform: translateY(-1px);
+}
+
+.typing {
+    font-style: italic;
+    color: #999;
+    display: none;
+}
+
+/* Make it look a bit more student-made */
+.header {
+    transform: rotate(0.1deg);
+}
+
+@media (max-width: 768px) {
+    .chat-area {
+        padding: 20px;
+    }
+    
+    .input-section {
+        padding: 20px;
+    }
+    
+    .header {
+        transform: none;
+    }
+    
+    .user-msg .bubble,
+    .bot-msg .bubble {
+        max-width: 85%;
+    }
+}
+</style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎓 Rural Education Helper</h1>
+            <div class="subtitle">My project to help students learn better!</div>
+        </div>
+        
+        <div class="chat-area" id="chatArea">
+            <div class="welcome-screen" id="welcomeScreen">
+                <h2>Welcome to Rural Education Helper! 📚</h2>
+                <p>I made this chatbot to help students in rural areas with their studies!</p>
+                <p>Ask me about homework, study tips, or anything you need help with:</p>
+                
+                <div class="starter-buttons">
+                    <button class="starter-btn" onclick="quickMessage('Help with math homework')">Math Help</button>
+                    <button class="starter-btn" onclick="quickMessage('Science questions')">Science</button>
+                    <button class="starter-btn" onclick="quickMessage('Study tips and advice')">Study Tips</button>
+                    <button class="starter-btn" onclick="quickMessage('Career guidance')">Career Help</button>
+                </div>
+            </div>
+            
+            <div class="typing" id="typingIndicator">
+                <div class="message bot-msg">
+                    <div class="bubble">Thinking... 🤔</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="input-section">
+            <input type="text" id="messageInput" placeholder="Ask me about your studies..." maxlength="300">
+            <button id="sendButton">Send</button>
+        </div>
+    </div>
+
+    <script>
+        const chatArea = document.getElementById('chatArea');
+        const messageInput = document.getElementById('messageInput');
+        const sendButton = document.getElementById('sendButton');
+        const welcomeScreen = document.getElementById('welcomeScreen');
+        const typingIndicator = document.getElementById('typingIndicator');
+        
+        let messageCount = 0;
+        
+        function addMessage(text, isUser = false) {
+            // Hide welcome screen after first message
+            if (messageCount === 0) {
+                welcomeScreen.style.display = 'none';
+            }
+            
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${isUser ? 'user-msg' : 'bot-msg'}`;
+            
+            const bubble = document.createElement('div');
+            bubble.className = 'bubble';
+            bubble.textContent = text;
+            
+            messageDiv.appendChild(bubble);
+            chatArea.appendChild(messageDiv);
+            
+            // Scroll to bottom
+            chatArea.scrollTop = chatArea.scrollHeight;
+            messageCount++;
+        }
+        
+        function showTyping() {
+            typingIndicator.style.display = 'block';
+            chatArea.scrollTop = chatArea.scrollHeight;
+        }
+        
+        function hideTyping() {
+            typingIndicator.style.display = 'none';
+        }
+        
+        function sendMessage() {
+            const message = messageInput.value.trim();
+            if (!message) return;
+            
+            addMessage(message, true);
+            messageInput.value = '';
+            
+            // Show typing indicator
+            showTyping();
+            
+            // Try to send to backend
+            fetch('/get', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded'
+                },
+                body: 'msg=' + encodeURIComponent(message)
+            })
+            .then(response => response.text())
+            .then(data => {
+                hideTyping();
+                addMessage(data);
+            })
+            .catch(error => {
+                hideTyping();
+                // Some fun fallback responses for when backend isn't working
+                const fallbacks = [
+                    "Hmm, I'm having trouble connecting to my brain right now! 🤖",
+                    "Oops! Something went wrong. Maybe try again? 😅",
+                    "My circuits are a bit scrambled at the moment! ⚡",
+                    "Error 404: Bot response not found! Just kidding, I'm working on it! 🔧"
+                ];
+                const randomResponse = fallbacks[Math.floor(Math.random() * fallbacks.length)];
+                addMessage(randomResponse);
+            });
+        }
+        
+        function quickMessage(text) {
+            messageInput.value = text;
+            sendMessage();
+        }
+        
+        // Event listeners
+        sendButton.addEventListener('click', sendMessage);
+        
+        messageInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                sendMessage();
+            }
+        });
+        
+        // Focus on input when page loads
+        messageInput.focus();
+        
+        // Add some personality to the input
+        messageInput.addEventListener('focus', function() {
+            this.placeholder = "What subject can I help you with? 📖";
+        });
+        
+        messageInput.addEventListener('blur', function() {
+            this.placeholder = "Ask me about your studies...";
+        });
+    </script>
+</body>
+</html>
